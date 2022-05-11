@@ -37,16 +37,16 @@ set(
 )
 
 # Generate the C++ code
-file(STRINGS "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/cxx-qt-gen/cpp_sources.txt" GEN_SOURCES)
-list(TRANSFORM GEN_SOURCES PREPEND "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/")
+file(STRINGS "$ENV{STAGING_DIR_HOST}/usr/include/demo-threading/target/cxx-qt-gen/cpp_sources.txt" GEN_SOURCES)
+list(TRANSFORM GEN_SOURCES PREPEND "$ENV{STAGING_DIR_HOST}/usr/include/demo-threading/target/")
 
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
 
 # Include generated sources
-target_include_directories(${APP_NAME} PUBLIC "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target")
+target_include_directories(${APP_NAME} PUBLIC "$ENV{STAGING_DIR_HOST}/usr/include/demo-threading/target")
 # Our cxx_qt and cxx headers are in this folder and need to be included
-target_include_directories(${APP_NAME} PUBLIC "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/cxx-qt-gen/statics")
+target_include_directories(${APP_NAME} PUBLIC "$ENV{STAGING_DIR_HOST}/usr/include/demo-threading/target/cxx-qt-gen/statics")
 
 # Link to generated rust library
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
