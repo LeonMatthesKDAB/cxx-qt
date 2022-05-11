@@ -61,4 +61,6 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::QuickControls2
     Qt${QT_VERSION_MAJOR}::Test
 )
+
+install(TARGETS ${APP_NAME} DESTINATION bin)
 # qt_import_qml_plugins(${APP_NAME})
