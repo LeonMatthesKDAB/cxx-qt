@@ -37,8 +37,13 @@ set(
 )
 
 # Generate the C++ code
+<<<<<<< HEAD
 file(STRINGS "$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/demo-threading/target/cxx-qt-gen/cpp_sources.txt" GEN_SOURCES)
 list(TRANSFORM GEN_SOURCES PREPEND "$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/demo-threading/target/")
+=======
+file(STRINGS "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/cxx-qt-gen/cpp_sources.txt" GEN_SOURCES)
+list(TRANSFORM GEN_SOURCES PREPEND "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/")
+>>>>>>> 908e4de (Make cpp_sources.txt relative to target directory)
 
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
@@ -61,6 +66,9 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::QuickControls2
     Qt${QT_VERSION_MAJOR}::Test
 )
+<<<<<<< HEAD
 
 install(TARGETS ${APP_NAME} DESTINATION bin)
+=======
+>>>>>>> 908e4de (Make cpp_sources.txt relative to target directory)
 # qt_import_qml_plugins(${APP_NAME})
