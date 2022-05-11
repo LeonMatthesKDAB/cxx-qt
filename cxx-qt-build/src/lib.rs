@@ -304,11 +304,13 @@ fn gen_cxx_for_files(
 fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
     let manifest_dir = manifest_dir();
 
-    let path = format!(
-        "{}/target/cxx-qt-gen/cpp_namespace_prefix.txt",
-        manifest_dir
-    );
-    let mut file = File::create(&path).expect("Could not create cpp_namespace_prefix file");
+    let directory = format!("{}/target/cxx-qt-gen", manifest_dir);
+    std::fs::create_dir_all(&directory).expect("Could not create target dir");
+
+    let path = format!("{}/cpp_namespace_prefix.txt", directory);
+
+    let mut file = File::create(&path)
+        .expect(format!("Could not create cpp_namespace_prefix file: '{}'", path).as_str());
     write!(file, "{}", cpp_namespace_prefix.join("::"))
         .expect("Could not write cpp_namespace_prefix file");
 }
@@ -317,10 +319,10 @@ fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
 fn write_cpp_sources_list(paths: &[String]) {
     let manifest_dir = manifest_dir();
 
-    let path = format!("{}/target/cxx-qt-gen", manifest_dir);
-    std::fs::create_dir_all(path).expect("Could not create target dir");
+    let directory = format!("{}/target/cxx-qt-gen", manifest_dir);
+    std::fs::create_dir_all(&directory).expect("Could not create target dir");
 
-    let path = format!("{}/target/cxx-qt-gen/cpp_sources.txt", manifest_dir);
+    let path = format!("{}/cpp_sources.txt", directory);
     let mut file = File::create(&path).expect("Could not create cpp_sources file");
 
     for path in paths {
@@ -495,9 +497,7 @@ impl CxxQtBuilder {
     /// Perform the build task, for example parsing and generating sources
     pub fn build(self) {
         // Set clang-format format
-        if generate_format(self.cpp_format).is_err() {
-            panic!("Failed to set clang-format.");
-        }
+        generate_format(self.cpp_format).unwrap_or_else(|_| panic!("Failed to set clang-format."));
 
         // Set the cpp namespace prefix to a file
         //
