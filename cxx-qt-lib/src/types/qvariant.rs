@@ -199,7 +199,7 @@ pub enum QVariantValue {
 }
 
 // Define how we convert from other types into a QVariantCpp
-trait IntoQVariantCpp {
+pub trait IntoQVariantCpp {
     fn into_qvariant(self) -> cxx::UniquePtr<QVariantCpp>;
 }
 
