@@ -37,16 +37,23 @@ set(
 )
 
 # Generate the C++ code
-cxx_qt_generate_cpp(GEN_SOURCES)
+file(STRINGS "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/cxx-qt-gen/cpp_sources.txt" GEN_SOURCES)
+list(TRANSFORM GEN_SOURCES PREPEND "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/")
 
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
 
 # Include generated sources
-cxx_qt_include(${APP_NAME})
+target_include_directories(${APP_NAME} PUBLIC "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target")
+# Our cxx_qt and cxx headers are in this folder and need to be included
+target_include_directories(${APP_NAME} PUBLIC "$ENV{OECORE_TARGET_SYSROOT}/usr/include/demo-threading/target/cxx-qt-gen/statics")
 
 # Link to generated rust library
-cxx_qt_link_rustlib(${APP_NAME})
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+target_link_libraries(${APP_NAME} PRIVATE rust Threads::Threads ${CMAKE_DL_LIBS})
+
+
 target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
@@ -54,4 +61,4 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::QuickControls2
     Qt${QT_VERSION_MAJOR}::Test
 )
-qt_import_qml_plugins(${APP_NAME})
+# qt_import_qml_plugins(${APP_NAME})

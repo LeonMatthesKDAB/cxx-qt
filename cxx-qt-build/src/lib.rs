@@ -288,17 +288,10 @@ fn gen_cxx_for_files(
     let path = format!("{}/target/cxx-qt-gen/src", manifest_dir);
     std::fs::create_dir_all(path).expect("Could not create cxx-qt src dir");
 
-    let mut cpp_files = Vec::new();
-
-    for rs_path in rs_source {
-        cpp_files.append(&mut gen_cxx_for_file(
-            rs_path,
-            ext_plugin,
-            cpp_namespace_prefix,
-        ));
-    }
-
-    cpp_files
+    rs_source
+        .iter()
+        .flat_map(|rs_path| gen_cxx_for_file(rs_path, ext_plugin, cpp_namespace_prefix))
+        .collect()
 }
 
 fn write_cpp_namespace_prefix(cpp_namespace_prefix: &[&'static str]) {
@@ -325,7 +318,13 @@ fn write_cpp_sources_list(paths: &[String]) {
     let path = format!("{}/cpp_sources.txt", directory);
     let mut file = File::create(&path).expect("Could not create cpp_sources file");
 
-    for path in paths {
+    for path in paths.iter().map(|cpp_path| {
+        // the paths must be relative to "<manifest_dir>/target/"
+        cpp_path
+            .as_str()
+            .strip_prefix(format!("{}/target/", manifest_dir).as_str())
+            .unwrap_or(cpp_path.as_str())
+    }) {
         writeln!(file, "{}", path).unwrap();
     }
 }

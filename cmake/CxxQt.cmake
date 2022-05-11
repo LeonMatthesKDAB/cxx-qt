@@ -49,6 +49,7 @@ function(cxx_qt_generate_cpp GEN_SOURCES)
 
     # Now we can read the list of C++ files that cargo produced
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/target/cxx-qt-gen/cpp_sources.txt" CPP_GEN_SOURCES)
+    list(TRANSFORM CPP_GEN_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/target/")
 
     # Pass the generated sources back
     set(${GEN_SOURCES} ${CPP_GEN_SOURCES} PARENT_SCOPE)
