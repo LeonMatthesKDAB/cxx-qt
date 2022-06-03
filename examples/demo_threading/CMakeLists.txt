@@ -65,5 +65,5 @@ target_link_libraries(${APP_NAME} PRIVATE
 install(TARGETS ${APP_NAME} DESTINATION bin)
 install(PROGRAMS demo.py DESTINATION bin)
 install(FILES demo-threading.service demo-threading-sensors.service DESTINATION /etc/systemd/system)
-install(FILES root_env DESTINATION /opt)
+install(FILES root_env DESTINATION /etc)
 # qt_import_qml_plugins(${APP_NAME})

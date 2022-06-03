@@ -7,7 +7,7 @@ User=root
 WorkingDirectory=/home/root
 ExecStartPre=/bin/sleep 5
 ExecStart=demo_threading -platform wayland
-EnvironmentFile=/opt/root_env
+EnvironmentFile=/etc/demo-threading.env
 Restart=always
 
 [Install]
