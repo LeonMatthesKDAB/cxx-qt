@@ -43,7 +43,7 @@ list(TRANSFORM GEN_SOURCES PREPEND "$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/dem
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
 
-TARGET_COMPILE_DEFINITIONS(${APP_NAME} PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>,$<CONFIG:Release>>:QT_QML_DEBUG>)
+TARGET_COMPILE_DEFINITIONS(${APP_NAME} PRIVATE QT_QML_DEBUG>)
 
 # Include generated sources
 target_include_directories(${APP_NAME} PUBLIC "$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/demo-threading/target")
