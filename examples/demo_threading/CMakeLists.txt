@@ -43,6 +43,8 @@ list(TRANSFORM GEN_SOURCES PREPEND "$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/dem
 # Define our executable with our QML resource files
 add_executable(${APP_NAME} "${CPP_SOURCES}" "${GEN_SOURCES}" "${RESOURCES}")
 
+TARGET_COMPILE_DEFINITIONS(${APP_NAME} PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>,$<CONFIG:Release>>:QT_QML_DEBUG>)
+
 # Include generated sources
 target_include_directories(${APP_NAME} PUBLIC "$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/demo-threading/target")
 # Our cxx_qt and cxx headers are in this folder and need to be included
@@ -65,5 +67,5 @@ target_link_libraries(${APP_NAME} PRIVATE
 install(TARGETS ${APP_NAME} DESTINATION bin)
 install(PROGRAMS demo.py DESTINATION bin)
 install(FILES demo-threading.service demo-threading-sensors.service DESTINATION /etc/systemd/system)
-install(FILES root_env DESTINATION /etc)
+install(FILES demo-threading.env DESTINATION /etc)
 # qt_import_qml_plugins(${APP_NAME})
