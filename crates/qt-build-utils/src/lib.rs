@@ -321,9 +321,13 @@ impl QtBuild {
     /// Skip doing this in the constructor because not every user of this crate will use each tool
     fn get_qt_tool(&self, tool_name: &str) -> Result<String, ()> {
         for qmake_query_var in [
+            "QT_HOST_LIBEXECS/get",
             "QT_HOST_LIBEXECS",
+            "QT_HOST_BINS/get",
             "QT_HOST_BINS",
+            "QT_INSTALL_LIBEXECS/get",
             "QT_INSTALL_LIBEXECS",
+            "QT_INSTALL_BINS/get",
             "QT_INSTALL_BINS",
         ] {
             let executable_path = format!("{}/{}", self.qmake_query(qmake_query_var), tool_name);
