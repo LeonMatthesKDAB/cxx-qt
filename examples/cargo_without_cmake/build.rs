@@ -19,6 +19,8 @@ fn main() {
         // Tell CxxQtBuilder's internal cc::Build struct to compile the manually
         // written C++ file in addition to the generated C++.
         .cc_builder(|cc| {
+            // we are getting undefined symbol: _ZdlPvm, version Qt_5
+            // cc.flag_if_supported("-fno-sized-deallocation");
             cc.file("cpp/run.cpp");
             println!("cargo:rerun-if-changed=cpp/run.cpp");
         })

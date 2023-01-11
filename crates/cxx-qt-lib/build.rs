@@ -136,6 +136,7 @@ fn main() {
             "core/qvariant/qvariant_qcolor",
             "core/qvector/qvector_qcolor",
             "gui/qcolor",
+            "gui/qguiapplication",
             "gui/qvector2d",
             "gui/qvector3d",
             "gui/qvector4d",
@@ -182,6 +183,7 @@ fn main() {
     if feature_qt_gui_enabled {
         cpp_files.extend([
             "gui/qcolor",
+            "gui/qguiapplication",
             "gui/qvector2d",
             "gui/qvector3d",
             "gui/qvector4d",
