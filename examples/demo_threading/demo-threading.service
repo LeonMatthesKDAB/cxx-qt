@@ -1,0 +1,14 @@
+[Unit]
+Description=The CXX-Qt Beach House demo
+After=weston@root.service
+
+[Service]
+User=root
+WorkingDirectory=/home/root
+ExecStartPre=/bin/sleep 5
+ExecStart=demo_threading -platform wayland
+EnvironmentFile=/etc/demo-threading.env
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

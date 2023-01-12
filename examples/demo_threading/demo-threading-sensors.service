@@ -1,0 +1,13 @@
+[Unit]
+Description=CXX-Qt Demo Sensors
+After=demo-threading.service
+
+[Service]
+User=root
+WorkingDirectory=/home/root
+ExecStartPre=/bin/sleep 5
+ExecStart=demo.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

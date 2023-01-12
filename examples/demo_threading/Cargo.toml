@@ -7,7 +7,7 @@ name = "demo-threading"
 version = "0.1.0"
 authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>"]
 edition = "2018"
-license = "MIT OR Apache-2.0"
+license = "LICENSES/MIT.txt"
 repository="https://github.com/LeonMatthesKDAB/cxx-qt.git"
 
 [dependencies]
