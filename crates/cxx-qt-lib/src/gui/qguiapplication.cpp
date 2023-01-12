@@ -13,27 +13,24 @@
 
 #include <QtCore/QObject>
 
-// TODO: remove tracing
-#include <QtCore/QDebug>
-
-// TODO: asserts
-
 namespace {
 
 class ArgsData : public QObject
 {
 public:
   char** data() { return m_vector.data(); }
-  int size() const { return static_cast<int>(m_vector.size()); }
-  void push(std::string string)
+  int& size() { return m_size; }
+  void push(const std::string& string)
   {
-    m_ownedVector.push_back(string);
-    m_vector.push_back(string.data());
+    m_ownedVector.emplace_back(string);
+    m_vector.emplace_back(m_ownedVector.back().data());
+    m_size = m_ownedVector.size();
   }
 
 private:
   std::vector<std::string> m_ownedVector;
   std::vector<char*> m_vector;
+  int m_size = 0;
 };
 
 }
@@ -51,22 +48,17 @@ qguiapplicationExec(QGuiApplication& app)
 qguiapplicationNew(::rust::Vec<::rust::String> args)
 {
   auto argsData = new ArgsData();
-  for (::std::size_t i = 0; i < args.size(); i++) {
+  for (const auto& str : args) {
     // Construct an owned std::string and copy from the rust::String
-    std::string str;
-    str.assign(args.at(i).c_str(), args.at(i).size());
-    argsData->push(str);
+    argsData->push(std::string(str));
   }
-  auto argc = argsData->size();
 
-  auto ptr = ::std::make_unique<QGuiApplication>(argc, argsData->data());
+  auto ptr =
+    ::std::make_unique<QGuiApplication>(argsData->size(), argsData->data());
   // Set the parent of the ArgsData to QGuiApplication
   // as the vector needs to live as long as the QGuiApplication
   argsData->setParent(ptr.get());
 
-  // TODO: remove tracing
-  // We can access arguments here fine
-  qWarning() << Q_FUNC_INFO << qApp->arguments();
   return ptr;
 }
 

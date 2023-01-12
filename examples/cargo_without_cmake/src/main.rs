@@ -12,11 +12,16 @@ mod cxxqt_object;
 // ANCHOR: book_cargo_extern_c
 extern "C" {
     fn run_cpp();
+    fn init_resources();
 }
 // ANCHOR_END: book_cargo_extern_c
 
 // ANCHOR: book_cargo_rust_main
 fn main() {
+    unsafe {
+    init_resources();
+    }
+
     let mut app = cxx_qt_lib::QGuiApplication::new_from_args_os(std::env::args_os());
 
     // Call the C++ initialization code to start the QML GUI.

@@ -19,6 +19,12 @@
 #include "qml.qrc.cpp"
 // ANCHOR_END: book_cargo_cpp_includes
 
+extern "C" void
+init_resources()
+{
+  qInitResources();
+}
+
 // ANCHOR: book_cargo_run_cpp
 // extern "C" is important for the linker to be able to link this
 // function with Rust code.
@@ -33,20 +39,26 @@ run_cpp()
   // Rust executable with Cargo, the Qt Resource System needs to be initialized
   // manually.
   // https://doc.qt.io/qt-6/resources.html#explicit-loading-and-unloading-of-embedded-resources
-  qInitResources();
   // ANCHOR_END: book_cargo_init_qrc
 
-  // TODO: this will explode
-  // qWarning() << Q_FUNC_INFO << qApp->arguments();
-
   // ANCHOR: book_cargo_run_qml
-  QQmlApplicationEngine engine;
+  // Make sure to allocate this with "new" so it doesn't
+  // get dropped at the end of this function
+  auto engine = new QQmlApplicationEngine(qApp);
 
   const QUrl url(QStringLiteral("qrc:/main.qml"));
+  QObject::connect(
+    engine,
+    &QQmlApplicationEngine::objectCreated,
+    qApp,
+    [url](QObject* obj, const QUrl& objUrl) {
+      if (!obj && url == objUrl)
+        QCoreApplication::exit(-1);
+    },
+    Qt::QueuedConnection);
 
   qmlRegisterType<MyObject>("com.kdab.cxx_qt.demo", 1, 0, "MyObject");
 
-  // TODO: this explodes due to calling qApp->arguments()
-  engine.load(url);
+  engine->load(url);
 }
 // ANCHOR_END: book_cargo_run_qml
