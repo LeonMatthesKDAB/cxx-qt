@@ -16,3 +16,4 @@ rustup/*
 
 # clangd
 compile_commands.json
+**/.cache/

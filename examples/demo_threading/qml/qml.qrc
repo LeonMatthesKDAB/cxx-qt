@@ -1,4 +1,36 @@
 <RCC>
+    <qresource prefix="/compat/">
+        <file alias="ConicalGradient.qml">compat/ConicalGradientQt5.qml</file>
+        <file alias="OpacityMask.qml">compat/OpacityMaskQt5.qml</file>
+    </qresource>
+    <qresource prefix="/images/">
+        <file>bg.png</file>
+        <file>ocean.png</file>
+        <file>beach2.png</file>
+        <file>beach1.png</file>
+        <file>level0.png</file>
+        <file>sideshadow.png</file>
+        <file>activeInner.png</file>
+        <file>inactiveInner.png</file>
+        <file>activeOuter.png</file>
+        <file>inactiveOuter.png</file>
+        <file>level0i.png</file>
+        <file>level1.png</file>
+        <file>level2.png</file>
+        <file>level1i.png</file>
+        <file>level2i.png</file>
+        <file>level3.png</file>
+        <file>RLogo.png</file>
+        <file>iconwirless.png</file>
+        <file>iconSensors.png</file>
+        <file>sensor.png</file>
+        <file>sensorefect.png</file>
+        <file>panel.png</file>
+        <file>kdabLogo.png</file>
+        <file>RLogolarge.png</file>
+        <file>qt-logo.png</file>
+        <file>rust-logo-white.png</file>
+    </qresource>
     <qresource prefix="/">
         <file>MainWindow.qml</file>
         <file>Button.qml</file>

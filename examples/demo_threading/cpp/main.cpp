@@ -11,9 +11,13 @@
 #include "helpers/energyusageproxymodel.h"
 #include "helpers/sensor.h"
 
-int
-main(int argc, char* argv[])
+#include "qml.qrc.cpp"
+
+extern "C" int
+mainCpp(int argc, char* argv[])
 {
+  qInitResources();
+
   QGuiApplication app(argc, argv);
 
   QQmlApplicationEngine engine;
