@@ -8,10 +8,10 @@ inherit cargo
 # how to get demo-threading could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/demo-threading/0.1.0"
 SRC_URI += "gitsm://git@github.com/LeonMatthesKDAB/cxx-qt.git;protocol=ssh;nobranch=1;branch=yocto-kirkstone"
-SRCREV = "414579b4df62af2d84293ca39bb331d05550868a"
+SRCREV = "c645cc12cb3187fc0848714426a12b47fe21eb99"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR = "examples/demo_threading"
-PV:append = ".AUTOINC+414579b4df"
+PV:append = ".AUTOINC+c645cc12cb"
 
 # please note if you have entries that do not begin with crate://
 # you must change them to how that package can be fetched
@@ -37,11 +37,11 @@ SRC_URI += " \
     crate://crates.io/convert_case/0.6.0 \
     crate://crates.io/crossbeam-utils/0.8.11 \
     crate://crates.io/ctor/0.1.23 \
-    crate://crates.io/cxx-build/1.0.73 \
-    crate://crates.io/cxx-gen/0.7.73 \
-    crate://crates.io/cxx/1.0.75 \
-    crate://crates.io/cxxbridge-flags/1.0.75 \
-    crate://crates.io/cxxbridge-macro/1.0.75 \
+    crate://crates.io/cxx-build/1.0.86 \
+    crate://crates.io/cxx-gen/0.7.86 \
+    crate://crates.io/cxx/1.0.86 \
+    crate://crates.io/cxxbridge-flags/1.0.86 \
+    crate://crates.io/cxxbridge-macro/1.0.86 \
     crate://crates.io/diff/0.1.13 \
     crate://crates.io/either/1.8.0 \
     crate://crates.io/event-listener/2.5.3 \
