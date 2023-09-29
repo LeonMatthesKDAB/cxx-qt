@@ -129,8 +129,6 @@ impl qobject::ThreadingWebsite {
 
                     // Indicate that we have finished loading the title
                     qobject_website
-                        .as_ref()
-                        .rust()
                         .loading
                         .store(false, std::sync::atomic::Ordering::Relaxed);
                 })

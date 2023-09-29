@@ -12,20 +12,26 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 This library provides a safe mechanism for bridging between Qt code and Rust code in a different way to typical Rust Qt bindings.
 
 We acknowledge that Qt code and Rust code have different idioms so cannot be directly wrapped from one to another.
+Qt extends C++ object-based system with their own meta-object system, which is a reflection layer on top of normal C++ constructs that allows for runtime reflection.
 
-Instead of one-to-one bindings we use [CXX](https://cxx.rs/) to [bridge](./bridge/index.md) between, this allows for normal Qt code and normal Rust code.
+Instead of one-to-one bindings we extend [CXX](https://cxx.rs/) to [bridge](./bridge/index.md) between Qt and Rust code, this allows for normal Qt code and normal Rust code.
+The CXX-Qt bridge allows defining Qt meta-objects (think QObjects with properties, etc.) that are backed by Rust code.
+Additionally, existing meta-objects can be exposed to Rust as if they were normal Rust structs, thereby allowing two-way communication between Rust and Qt code.
 
-We feel this is more powerful than typical bindings as this allows us to provide a safe API and safe [multi-threading](./traits/threading.md) between Qt and Rust.
+In comparison to typical bindings through a C FFI, this empowers Rust users by providing a way to easily define Qt constructs in Rust and to reference existing Qt constructs from Rust.
 
-To aid integration of Qt and Rust code we provide common [Qt types](./concepts/types.md) for Rust which can pass across the bridge and provide ways to express common Qt idioms.
-
-Through the use of macros and code generation as seen in the figure below, the developer describes a `QObject` with CXX-Qt macro annotations. Then CXX-Qt generates the C++ representation of the object and uses macro expansion to define the [CXX](https://cxx.rs/) bridge for the interop between C++ and Rust.
+As seen in the figure below, the developer describes Qt meta-objects using CXX-Qt macro annotations.
+CXX-Qt then generates the necessary code to interact with the described meta-objects from both C++ and Rust.
+Internally, CXX-Qt uses CXX for the heavy lifting and allows using CXX concepts directly from within a CXX-Qt bridge.
 
 <div style="background-color: white; padding: 1rem; text-align: center;">
 
 ![Overview of CXX-Qt concept](./images/overview_abstract.svg)
 
 </div>
+
+CXX-Qt also comes with a library of pre-existing bindings for fundamental Qt types.
+This library is described in the [types page](./concepts/types.md) and distributed through the [cxx-qt-lib crate](https://docs.rs/cxx-qt-lib/).
 
 If you are new to CXX-Qt, we recommend you visit our [Getting Started Guide](./getting-started/index.md).
 
