@@ -28,12 +28,13 @@ fn from_pathsegment(segment: &PathSegment) -> Result<Vec<Lifetime>> {
             .into_iter()
             .flatten()
             .collect()),
-        PathArguments::Parenthesized(_) => {
+        PathArguments::Parenthesized(ref parens) => {
+            // This is likely unreachable, because we already catch any `impl Fn(..)` and
+            // `dyn Fn(..)` blocks in from_type.
+            // But we keep it here for completeness.
             // CODECOV_EXCLUDE_START
-            unreachable!(
-                "Parenthesized path args should not be in function args, only trait bounds!"
-            )
-            // CODECOV_EXCLUDE_STOP
+            Err(err_unsupported_type(&parens))
+            // CODECOV_EXCLUDE_END
         }
     }
 }

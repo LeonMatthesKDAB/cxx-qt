@@ -10,6 +10,7 @@ pub mod lifetimes;
 pub mod path;
 mod qtfile;
 mod qtitem;
+pub mod references;
 pub mod safety;
 pub mod types;
 
