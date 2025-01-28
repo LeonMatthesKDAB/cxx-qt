@@ -8,7 +8,10 @@
 #include <cxx-qt-lib/qlist.h>
 #include <cxx-qt-lib/qvector.h>
 
-static const int register_QList_QColor =
+extern "C" int
+init_cxx_qt_lib_gui()
+{
   qRegisterMetaType<::QList_QColor>("QList_QColor");
-static const int register_QVector_QColor =
   qRegisterMetaType<::QVector_QColor>("QVector_QColor");
+  return 42;
+}

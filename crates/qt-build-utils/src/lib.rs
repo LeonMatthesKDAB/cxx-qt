@@ -1018,8 +1018,9 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             .expect("Failed to write plugin initializer file");
         }
 
+        let (rcc, _) = self.qrc(&qrc_path);
         QmlModuleRegistrationFiles {
-            rcc: self.qrc(&qrc_path),
+            rcc,
             qmlcachegen: qmlcachegen_file_paths,
             qmltyperegistrar: qmltyperegistrar_output_path,
             plugin: qml_plugin_cpp_path,
@@ -1030,9 +1031,12 @@ Q_IMPORT_PLUGIN({plugin_class_name});
 
     /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
-    /// The compiled static library must be linked with [+whole-archive](https://doc.rust-lang.org/rustc/command-line-arguments.html#linking-modifiers-whole-archive)
-    /// or the linker will discard the generated static variables because they are not referenced from `main`.
-    pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> PathBuf {
+    /// This function also returns a String that contains the name of the resource initializer
+    /// function.
+    /// The build system must ensure that if the .cpp file is built into a static library, either
+    /// the `+whole-archive` flag is used, or the initializer function is called by the
+    /// application.
+    pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> (PathBuf, String) {
         if self.rcc_executable.is_none() {
             self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
         }
@@ -1047,6 +1051,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             "{}.cpp",
             input_path.file_name().unwrap().to_string_lossy(),
         ));
+        let name = input_path.file_name().unwrap().to_str().unwrap();
 
         let cmd = Command::new(self.rcc_executable.as_ref().unwrap())
             .args([
@@ -1054,7 +1059,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
                 "-o",
                 output_path.to_str().unwrap(),
                 "--name",
-                input_path.file_name().unwrap().to_str().unwrap(),
+                name,
             ])
             .output()
             .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
@@ -1067,7 +1072,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             );
         }
 
-        output_path
+        (output_path, format!("qInitResources_{name}"))
     }
 
     /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and return the paths of the sources

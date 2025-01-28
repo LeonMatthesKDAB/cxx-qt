@@ -358,7 +358,6 @@ pub struct CxxQtBuilder {
     cc_builder: cc::Build,
     public_interface: Option<Interface>,
     include_prefix: String,
-    initializers: Vec<String>,
 }
 
 impl CxxQtBuilder {
@@ -396,7 +395,6 @@ impl CxxQtBuilder {
             qt_modules,
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
-            initializers: vec![],
             public_interface: None,
             include_prefix: crate_name(),
         }
@@ -888,47 +886,84 @@ impl CxxQtBuilder {
         }
     }
 
-    fn setup_qt5_compatibility(&mut self, qtbuild: &qt_build_utils::QtBuild) {
-        // If we are using Qt 5 then write the std_types source
-        // This registers std numbers as a type for use in QML
-        //
-        // Note that we need this to be compiled into an object file
-        // as they are stored in statics in the source.
-        //
-        // TODO: Can we move this into cxx-qt so that it's only built
-        // once rather than for every cxx-qt-build? When we do this
-        // ensure that in a multi project that numbers work everywhere.
-        //
-        // Also then it should be possible to use CARGO_MANIFEST_DIR/src/std_types_qt5.cpp
-        // as path for cc::Build rather than copying the .cpp file
-        //
-        // https://github.com/rust-lang/rust/issues/108081
-        // https://github.com/KDAB/cxx-qt/pull/598
-        if qtbuild.version().major == 5 {
-            self.initializers
-                .push(include_str!("std_types_qt5.cpp").to_owned());
-        }
+    fn init_function_name(&self) -> String {
+        format!("cxx_qt_init_{}", crate_name().replace("-", "_"))
     }
 
-    fn generate_init_code(&self, initializers: &HashSet<PathBuf>) -> String {
-        initializers
+    fn generate_init_code(
+        &self,
+        qtbuild: &qt_build_utils::QtBuild,
+        initializer_files: &[PathBuf],
+        dependency_initializers: &HashSet<String>,
+    ) -> String {
+        let mut qt5_initializer = None;
+        if qtbuild.version().major == 5 {
+            // If we are using Qt 5 then write the std_types source
+            // This registers std numbers as a type for use in QML
+            //
+            // Note that we need this to be compiled into an object file
+            // as they are stored in statics in the source.
+            //
+            // See also:
+            // https://github.com/rust-lang/rust/issues/108081
+            // https://github.com/KDAB/cxx-qt/pull/598
+            qt5_initializer = Some(include_str!("std_types_qt5.cpp").to_owned());
+        }
+
+        let (declarations, calls): (Vec<_>, Vec<_>) = dependency_initializers
             .iter()
-            .map(|path| std::fs::read_to_string(path).expect("Could not read initializer file!"))
-            .chain(self.initializers.iter().cloned())
+            .map(|init_fun| {
+                (
+                    // declaration
+                    format!("extern \"C\" int {init_fun}();"),
+                    // call
+                    format!("{init_fun}();"),
+                )
+            })
+            .unzip();
+        let init_function = format!(
+            "{declarations}\nextern \"C\" int {init_fun}() {{\n{calls}\nreturn 42;\n}}",
+            init_fun = self.init_function_name(),
+            declarations = declarations.join("\n"),
+            calls = calls.join("\n"),
+        );
+
+        initializer_files
+            .iter()
+            .map(|file| std::fs::read_to_string(file).expect("Could not read initializer file"))
+            .chain(qt5_initializer)
+            .chain(Some(init_function))
             .collect::<Vec<_>>()
             .join("\n")
     }
 
-    fn build_initializers(&mut self, init_builder: &cc::Build, initializers: &HashSet<PathBuf>) {
+    fn build_initializers(&mut self, init_builder: &cc::Build, initializer_code: String) {
         let initializers_path = dir::out().join("cxx-qt-build").join("initializers");
         std::fs::create_dir_all(&initializers_path).expect("Failed to create initializers path!");
 
-        let initializers_path = initializers_path.join(format!("{}.cpp", crate_name()));
-        std::fs::write(&initializers_path, self.generate_init_code(initializers))
+        let initializers_file = initializers_path.join(format!("{}-init-lib.cpp", crate_name()));
+        std::fs::write(&initializers_file, initializer_code)
             .expect("Could not write initializers file");
+
+        // Build static initializers into a library that we link with whole-archive
+        // Then use object files just to trigger the initial call.
+        init_builder
+            .clone()
+            .file(initializers_file)
+            .link_lib_modifier("+whole-archive")
+            .compile(&format!("{}-initializers", crate_name()));
+
+        let init_call = format!(
+            "extern \"C\" int {init_fun}();\nstatic const int do_{init_fun} = {init_fun}();",
+            init_fun = self.init_function_name()
+        );
+
+        let init_file = initializers_path.join(format!("{}.cpp", crate_name()));
+        std::fs::write(&init_file, init_call).expect("Could not write initializers call file!");
+
         Self::build_object_file(
             init_builder,
-            initializers_path,
+            init_file,
             dir::crate_target().join("initializers.o"),
         );
     }
@@ -936,7 +971,7 @@ impl CxxQtBuilder {
     fn generate_cpp_from_qrc_files(
         &mut self,
         qtbuild: &mut qt_build_utils::QtBuild,
-    ) -> HashSet<PathBuf> {
+    ) -> Vec<(PathBuf, String)> {
         self.qrc_files
             .iter()
             .map(|qrc_file| {
@@ -955,7 +990,7 @@ impl CxxQtBuilder {
         &self,
         dependencies: &[Dependency],
         qt_modules: HashSet<String>,
-        initializers: HashSet<PathBuf>,
+        initializers: HashSet<String>,
     ) {
         if let Some(interface) = &self.public_interface {
             // We automatically reexport all qt_modules and initializers from downstream dependencies
@@ -1084,15 +1119,22 @@ impl CxxQtBuilder {
             &self.include_prefix.clone(),
         );
 
-        let mut initializers = self.generate_cpp_from_qrc_files(&mut qtbuild);
-        initializers.extend(dependencies::initializer_paths(
-            self.public_interface.as_ref(),
-            &dependencies,
-        ));
+        let (qrc_files, qrc_initializers): (Vec<PathBuf>, HashSet<String>) = self
+            .generate_cpp_from_qrc_files(&mut qtbuild)
+            .into_iter()
+            .unzip();
 
-        self.setup_qt5_compatibility(&qtbuild);
+        let dependency_initializers =
+            dependencies::initializer_paths(self.public_interface.as_ref(), &dependencies);
+        let initializers = dependency_initializers
+            .union(&qrc_initializers)
+            .cloned()
+            .chain(Some(self.init_function_name()))
+            .collect();
 
-        self.build_initializers(&init_builder, &initializers);
+        let initializer_code =
+            self.generate_init_code(&qtbuild, &qrc_files, &dependency_initializers);
+        self.build_initializers(&init_builder, initializer_code);
 
         // Only compile if we have added files to the builder
         // otherwise we end up with no static library but ask cargo to link to it which causes an error

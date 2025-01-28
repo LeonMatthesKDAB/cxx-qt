@@ -254,6 +254,7 @@ fn main() {
     }
 
     let mut cpp_files = vec![
+        "core/init",
         "core/qbytearray",
         "core/qcoreapplication",
         "core/qdate",
@@ -288,6 +289,7 @@ fn main() {
 
     if qt_gui_enabled() {
         cpp_files.extend([
+            "gui/init",
             "gui/qcolor",
             "gui/qfont",
             "gui/qguiapplication",
@@ -317,7 +319,7 @@ fn main() {
     }
 
     let mut interface = cxx_qt_build::Interface::default()
-        .initializer("src/core/init.cpp")
+        .initializer("init_cxx_qt_lib_core".to_owned())
         .export_include_prefixes([])
         .export_include_directory(header_dir(), "cxx-qt-lib")
         .reexport_dependency("cxx-qt");
@@ -325,7 +327,7 @@ fn main() {
     if qt_gui_enabled() {
         interface = interface
             .define("CXX_QT_GUI_FEATURE", None)
-            .initializer("src/gui/init.cpp");
+            .initializer("init_cxx_qt_lib_gui".to_owned());
     }
 
     if qt_qml_enabled() {

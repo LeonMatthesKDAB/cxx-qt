@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 /// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
 pub struct Interface {
     pub(crate) compile_definitions: HashMap<String, Option<String>>,
-    pub(crate) initializers: Vec<PathBuf>,
+    pub(crate) initializers: Vec<String>,
     // The name of the links keys, whose CXX-Qt dependencies to reexport
     pub(crate) reexport_links: HashSet<String>,
     pub(crate) exported_include_prefixes: Vec<String>,
@@ -65,18 +65,19 @@ impl Interface {
         self
     }
 
-    /// Add a C++ file path that will be exported as an initializer to downstream dependencies.
+    /// Register an initializer function to be called on startup.
     ///
-    /// Initializer files will be built into object files, instead of linked into the static
-    /// library.
-    /// This way, the static variables and their constructors in this code will not be optimized
-    /// out by the linker.
-    pub fn initializer(mut self, path: impl AsRef<Path>) -> Self {
-        let path = PathBuf::from(path.as_ref());
-        let path = path
-            .canonicalize()
-            .expect("Failed to canonicalize path to initializer! Does the path exist?");
-        self.initializers.push(path);
+    /// The initializer function must match the C++ signature:
+    /// extern "C" int function_name();
+    /// or the Rust equivalent:
+    /// extern "C" fn function_name() -> i32;
+    ///
+    /// Where function_name is the parameter passed here.
+    ///
+    /// Note that the function_name must be unique across all dependencies and must be accessible
+    /// directly by the linker without additional name mangling.
+    pub fn initializer(mut self, function_name: String) -> Self {
+        self.initializers.push(function_name);
         self
     }
 
@@ -153,7 +154,7 @@ pub(crate) struct Manifest {
     pub(crate) link_name: String,
     pub(crate) qt_modules: Vec<String>,
     pub(crate) defines: Vec<(String, Option<String>)>,
-    pub(crate) initializers: Vec<PathBuf>,
+    pub(crate) initializers: Vec<String>,
     pub(crate) exported_include_prefixes: Vec<String>,
 }
 
@@ -205,7 +206,7 @@ impl Dependency {
 pub(crate) fn initializer_paths(
     interface: Option<&Interface>,
     dependencies: &[Dependency],
-) -> HashSet<PathBuf> {
+) -> HashSet<String> {
     dependencies
         .iter()
         .flat_map(|dep| dep.manifest.initializers.iter().cloned())
