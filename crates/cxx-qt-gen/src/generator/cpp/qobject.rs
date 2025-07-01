@@ -125,7 +125,10 @@ impl GeneratedCppQObject {
             // CODECOV_EXCLUDE_STOP
         };
 
-        generated.blocks.base_classes.push(base_class.clone());
+        generated
+            .blocks
+            .base_classes
+            .push(format!("public {base_class}"));
 
         // Add the CxxQtType rust and rust_mut methods
         generated

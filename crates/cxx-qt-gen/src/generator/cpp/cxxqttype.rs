@@ -17,7 +17,7 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<GeneratedCppQObjectBloc
 
     result
         .base_classes
-        .push(format!("::rust::cxxqt1::CxxQtType<{rust_struct}>"));
+        .push(format!("private ::rust::cxxqt1::CxxQtType<{rust_struct}>"));
 
     Ok(result)
 }
